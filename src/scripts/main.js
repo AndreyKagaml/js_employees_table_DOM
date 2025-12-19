@@ -5,7 +5,7 @@ const table = document.querySelector('table');
 if (table) {
   const headers = table.querySelector('thead');
   const tbody = table.querySelector('tbody');
-  const rows = [...tbody.querySelectorAll('tr')];
+  let rows = [...tbody.querySelectorAll('tr')];
   let editing = null;
 
   if (headers && rows) {
@@ -38,7 +38,7 @@ if (table) {
     tbody.addEventListener('click', (ev) => {
       const selectedRow = ev.target.closest('tr');
 
-      let active = tbody.querySelector('.active');
+      const active = tbody.querySelector('.active');
 
       if (active) {
         active.removeAttribute('class');
@@ -92,6 +92,7 @@ if (table) {
 
     if (notification.className.includes('success')) {
       addEmployee(tbody, empl);
+      rows = [...tbody.querySelectorAll('tr')];
     }
   });
 }
@@ -111,8 +112,10 @@ function compareRowsByNumbers(a, b, index, asc) {
 }
 
 function compareRowsByStrings(a, b, index, asc) {
-  return asc *
-    a.children[index].textContent.localeCompare(b.children[index].textContent);
+  return (
+    asc *
+    a.children[index].textContent.localeCompare(b.children[index].textContent)
+  );
 }
 
 function createForm() {
@@ -216,6 +219,8 @@ function validEmployee(employee) {
     descriptionText.textContent = 'Name should be more length then 4';
     title.textContent = 'Name format wrong';
     notification.classList.replace('success', 'error');
+
+    return notification;
   }
 
   if (age < 18 || age > 90) {
@@ -242,19 +247,21 @@ function addEmployee(tbody, employee) {
 }
 
 function parseSalary(value) {
-  if (value.length > 3) {
-    let count = Math.floor(value.length / 3);
-    const digits = value.split('');
-
-    if (value.length % 3 === 0) {
-      count--;
-    }
-
-    for (let i = digits.length - 4; count > 0; count--) {
-      digits[i] += ',';
-      i -= 3;
-    }
-
-    return '$' + digits.join('');
+  if (value.length <= 3) {
+    return '$' + value;
   }
+
+  let count = Math.floor(value.length / 3);
+  const digits = value.split('');
+
+  if (value.length % 3 === 0) {
+    count--;
+  }
+
+  for (let i = digits.length - 4; count > 0; count--) {
+    digits[i] += ',';
+    i -= 3;
+  }
+
+  return '$' + digits.join('');
 }
