@@ -85,14 +85,17 @@ if (table) {
     ev.preventDefault();
 
     const empl = getEmployee(form);
-    const notification = validEmployee(empl);
 
-    document.body.insertAdjacentElement('afterbegin', notification);
-    setTimeout(() => notification.remove(), 2000);
+    if (empl) {
+      const notification = validEmployee(empl);
 
-    if (notification.className.includes('success')) {
-      addEmployee(tbody, empl);
-      rows = [...tbody.querySelectorAll('tr')];
+      document.body.insertAdjacentElement('afterbegin', notification);
+      setTimeout(() => notification.remove(), 2000);
+
+      if (notification.className.includes('success')) {
+        addEmployee(tbody, empl);
+        rows = [...tbody.querySelectorAll('tr')];
+      }
     }
   });
 }
@@ -191,6 +194,12 @@ function createButtonForm(form, nameButton, type) {
 function getEmployee(form) {
   const values = form.elements;
 
+  for (let i = 0; i < 5; i++) {
+    if (!values[i].value) {
+      return false;
+    }
+  }
+
   return {
     name: values.name.value,
     position: values.position.value,
@@ -205,31 +214,71 @@ function validEmployee(employee) {
   const title = document.createElement('h2');
   const descriptionText = document.createElement('p');
   const age = parseInt(employee.age);
+  const titles = ['Success', 'Name format wrong', 'Age value wrong'];
+  const messages = [
+    'Employee added successfully',
+    'Name should be more length then 4',
+    'Age should be more then 18 and less then 90',
+  ];
 
   notification.setAttribute('data-qa', 'notification');
-  notification.classList.add('notification', 'success');
+  notification.classList.add('notification');
   title.className = 'title';
-  title.textContent = 'Success';
-  descriptionText.textContent = 'Employee added successfully';
 
   notification.insertAdjacentElement('beforeend', descriptionText);
   notification.insertAdjacentElement('afterbegin', title);
 
   if (employee.name.length < 4) {
-    descriptionText.textContent = 'Name should be more length then 4';
-    title.textContent = 'Name format wrong';
-    notification.classList.replace('success', 'error');
-
-    return notification;
+    setValuesToNotification(
+      notification,
+      'error',
+      title,
+      descriptionText,
+      titles,
+      messages,
+      1,
+    );
   }
 
   if (age < 18 || age > 90) {
-    descriptionText.textContent = 'Age should be more then 18 and less then 90';
-    title.textContent = 'Age value wrong';
-    notification.classList.replace('success', 'error');
+    setValuesToNotification(
+      notification,
+      'error',
+      title,
+      descriptionText,
+      titles,
+      messages,
+      2,
+    );
+  }
+
+  if (!notification.className.includes('error')) {
+    setValuesToNotification(
+      notification,
+      'success',
+      title,
+      descriptionText,
+      titles,
+      messages,
+      0,
+    );
   }
 
   return notification;
+}
+
+function setValuesToNotification(
+  notification,
+  statusNot,
+  title,
+  text,
+  dataTitle,
+  dataText,
+  index,
+) {
+  notification.classList.add(statusNot);
+  title.textContent = dataTitle[index];
+  text.textContent = dataText[index];
 }
 
 function addEmployee(tbody, employee) {
